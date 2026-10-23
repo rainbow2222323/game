@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">2024110546张恩鸣</string>
+    <string name="label_name">姓名：</string>
+    <string name="label_gender">性别：</string>
+    <string name="label_student_id">学号：</string>
+    <string name="label_phone">电话：</string>
+    <string name="label_email">邮件地址：</string>
+    <string name="label_hobbies">爱好：</string>
+    <string name="label_high_score">游戏最高分：</string>
+    <string name="btn_edit_info">修改个人信息</string>
+    <string name="btn_card_game">翻牌游戏</string>
+    <string name="title_edit_info">信息修改</string>
+    <string name="title_card_game">翻牌游戏</string>
+    <string name="hint_name">姓名</string>
+    <string name="hint_student_id">学号</string>
+    <string name="hint_phone">电话号码</string>
+    <string name="hint_email">电子邮件地址</string>
+    <string name="label_gender_colon">性别：</string>
+    <string name="gender_male">男</string>
+    <string name="gender_female">女</string>
+    <string name="label_hobby_colon">爱好：</string>
+    <string name="hobby_travel">旅游</string>
+    <string name="hobby_reading">阅读</string>
+    <string name="hobby_game">游戏</string>
+    <string name="hobby_shopping">购物</string>
+    <string name="btn_save">保存</string>
+    <string name="btn_cancel">取消</string>
+    <string name="label_score">得分：</string>
+    <string name="btn_reset">重置游戏</string>
+    <string name="btn_exit">退出</string>
+    <string name="card_back_text">?</string>
+    <string name="toast_saved">信息已保存</string>
+</resources>
