@@ -1,26 +1,25 @@
 package com.example.exp4
 
+import android.content.res.Configuration
 import android.os.Bundle
-import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.GridLayoutManager
+import com.example.exp4.adapter.CardAdapter
 import com.example.exp4.databinding.ActivityCardGameBinding
 import com.example.exp4.model.CardMatchingGame
 
 /**
  * 翻牌游戏 Activity（Controller）：
- * 接受用户点击交互 -> 处理 CardMatchingGame 模型 -> 同步刷新牌面界面（View）
+ * 接收 RecyclerView 的回调 -> 交给 CardMatchingGame 模型处理 -> 通知 CardAdapter 刷新牌面。
+ * 竖屏显示 24 张牌（4 列），横屏显示 16 张牌（8 列），牌数配置见 values/integers.xml。
  */
 class CardGameActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCardGameBinding
+    private lateinit var adapter: CardAdapter
     private lateinit var game: CardMatchingGame
-    private lateinit var cardViews: List<TextView>
-
-    private val cardIds = intArrayOf(
-        R.id.card0, R.id.card1, R.id.card2, R.id.card3,
-        R.id.card4, R.id.card5, R.id.card6, R.id.card7,
-        R.id.card8, R.id.card9, R.id.card10, R.id.card11,
-        R.id.card12, R.id.card13, R.id.card14, R.id.card15
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,62 +27,92 @@ class CardGameActivity : AppCompatActivity() {
         setContentView(binding.root)
         title = getString(R.string.title_card_game)
 
-        cardViews = cardIds.map { findViewById<TextView>(it) }
-        cardViews.forEachIndexed { index, view ->
-            view.setOnClickListener { onCardClicked(index) }
+        // 适配 edge-to-edge：避免牌面被系统导航栏遮挡
+        val gamePadding = resources.getDimensionPixelSize(R.dimen.game_padding)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(
+                gamePadding + systemBars.left,
+                gamePadding,
+                gamePadding + systemBars.right,
+                gamePadding + systemBars.bottom
+            )
+            insets
         }
 
-        binding.btnReset.setOnClickListener { startNewGame() }
-        binding.btnExit.setOnClickListener { finish() }
+        game = CardMatchingGame(cardCount())
 
-        startNewGame()
-    }
-
-    /** 开始新的一局游戏 */
-    private fun startNewGame() {
-        game = CardMatchingGame(cardViews.size)
-        updateUI()
-    }
-
-    /** 用户点击某张牌：交给模型处理并同步界面 */
-    private fun onCardClicked(index: Int) {
-        game.chooseCardAtIndex(index)
-        PlayerStore.submitScore(game.score)
-        updateUI()
-    }
-
-    /** 根据模型状态刷新所有牌的显示和得分 */
-    private fun updateUI() {
-        for (i in cardViews.indices) {
-            val card = game.cardAtIndex(i)
-            val view = cardViews[i]
-            when {
-                card.isMatched -> {
-                    view.setBackgroundResource(R.drawable.card_matched)
-                    view.text = card.toString()
-                    view.setTextColor(getColor(R.color.matched_card_text))
-                }
-                card.isChosen -> {
-                    view.setBackgroundResource(R.drawable.card_front)
-                    view.text = card.toString()
-                    view.setTextColor(getCardColor(card.toString()))
-                }
-                else -> {
-                    view.setBackgroundResource(R.drawable.card_back)
-                    view.text = getString(R.string.card_back_text)
-                    view.setTextColor(getColor(R.color.card_back_text))
-                }
+        adapter = CardAdapter { position -> onCardClicked(position) }
+        binding.rvCards.layoutManager = GridLayoutManager(this, spanCount())
+        binding.rvCards.adapter = adapter
+        // 翻牌状态需要立即刷新，关闭默认的淡入淡出动画
+        binding.rvCards.itemAnimator = null
+        binding.rvCards.addOnLayoutChangeListener { _, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+            if (right - left != oldRight - oldLeft || bottom - top != oldBottom - oldTop) {
+                binding.rvCards.post { updateCardHeight() }
             }
         }
+
+        binding.btnReset.setOnClickListener { resetGame() }
+        binding.btnExit.setOnClickListener { finish() }
+
+        adapter.submitCards(currentCards())
         binding.tvScore.text = game.score.toString()
     }
 
-    /** 红桃/方块显示红色，黑桃/梅花显示黑色 */
-    private fun getCardColor(cardText: String): Int {
-        return if (cardText.startsWith("♥") || cardText.startsWith("♦")) {
-            getColor(R.color.red_card_text)
-        } else {
-            getColor(R.color.black_card_text)
+    /** 当前方向下应显示的牌数（竖屏 24、横屏 16） */
+    private fun cardCount(): Int = resources.getInteger(R.integer.card_count)
+
+    /** 当前方向下网格的列数（竖屏 4、横屏 8） */
+    private fun spanCount(): Int = resources.getInteger(R.integer.card_grid_span)
+
+    /** 把模型中的牌导出为适配器需要的列表 */
+    private fun currentCards() = List(game.cardCount) { game.cardAtIndex(it) }
+
+    /** 重置按钮：调用模型的 reset 方法重新发牌 */
+    private fun resetGame() {
+        game.reset()
+        adapter.submitCards(currentCards())
+        binding.tvScore.text = game.score.toString()
+    }
+
+    /** 用户点击某张牌：交给模型处理，再刷新牌面和得分 */
+    private fun onCardClicked(position: Int) {
+        game.chooseCardAtIndex(position)
+        adapter.submitCards(currentCards())
+        PlayerStore.submitScore(game.score)
+        binding.tvScore.text = game.score.toString()
+    }
+
+    /**
+     * 根据 RecyclerView 的可用高度与行数计算单张牌高度，
+     * 让牌面铺满屏幕且横竖屏都保持规整。
+     */
+    private fun updateCardHeight() {
+        val span = spanCount()
+        if (span <= 0 || game.cardCount == 0) return
+        val rows = (game.cardCount + span - 1) / span
+        val margin = resources.getDimensionPixelSize(R.dimen.card_margin)
+        val available =
+            binding.rvCards.height - binding.rvCards.paddingTop - binding.rvCards.paddingBottom
+        if (rows == 0 || available <= 0) return
+        val height = available / rows - margin * 2
+        adapter.cardHeight =
+            height.coerceAtLeast(resources.getDimensionPixelSize(R.dimen.card_min_height))
+    }
+
+    /** 旋转屏幕时切换列数与牌数；牌数变化则重新发牌 */
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        (binding.rvCards.layoutManager as? GridLayoutManager)?.spanCount = spanCount()
+
+        val newCardCount = cardCount()
+        if (newCardCount != game.cardCount) {
+            game = CardMatchingGame(newCardCount)
+            adapter.submitCards(currentCards())
+            binding.tvScore.text = game.score.toString()
+            Toast.makeText(this, R.string.toast_orientation_changed, Toast.LENGTH_SHORT).show()
         }
+        binding.rvCards.post { updateCardHeight() }
     }
 }

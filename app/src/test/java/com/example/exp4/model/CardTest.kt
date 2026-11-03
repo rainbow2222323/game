@@ -42,6 +42,34 @@ class CardTest {
     }
 
     @Test
+    fun threeCardsWithSameRankScore8() {
+        val card = Card(suit = "♥", rank = "5")
+        val others = arrayOf(Card(suit = "♠", rank = "5"), Card(suit = "♦", rank = "5"))
+        assertEquals(8, card.match(others))
+    }
+
+    @Test
+    fun threeCardsWithSameSuitScore4() {
+        val card = Card(suit = "♥", rank = "3")
+        val others = arrayOf(Card(suit = "♥", rank = "9"), Card(suit = "♥", rank = "K"))
+        assertEquals(4, card.match(others))
+    }
+
+    @Test
+    fun threeCardsWithoutCommonRankOrSuitScore0() {
+        val card = Card(suit = "♥", rank = "3")
+        val others = arrayOf(Card(suit = "♠", rank = "9"), Card(suit = "♦", rank = "K"))
+        assertEquals(0, card.match(others))
+    }
+
+    @Test
+    fun threeCardsWithOnlyTwoSameRankScore0() {
+        val card = Card(suit = "♥", rank = "5")
+        val others = arrayOf(Card(suit = "♠", rank = "5"), Card(suit = "♦", rank = "K"))
+        assertEquals(0, card.match(others))
+    }
+
+    @Test
     fun newCardIsNotChosenNorMatched() {
         val card = Card(suit = "♦", rank = "7")
         assertEquals(false, card.isChosen)

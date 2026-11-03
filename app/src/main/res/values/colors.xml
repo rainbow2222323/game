@@ -6,4 +6,9 @@
     <color name="black_card_text">#FF212121</color>
     <color name="card_back_text">#FFFFFFFF</color>
     <color name="matched_card_text">#FF9E9E9E</color>
+    <color name="card_back_color">#FF1565C0</color>
+    <color name="card_front_color">#FFFFFFFF</color>
+    <color name="card_matched_color">#FFEEEEEE</color>
+    <color name="card_border_color">#FFBDBDBD</color>
+    <color name="card_ripple_color">#33FFFFFF</color>
 </resources>

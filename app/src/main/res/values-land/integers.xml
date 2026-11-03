@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 横屏：8 列 × 2 行，共 16 张牌 -->
+    <integer name="card_count">16</integer>
+    <integer name="card_grid_span">8</integer>
+</resources>

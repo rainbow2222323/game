@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- RecyclerView 中的单张牌 -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/card_margin"
+    android:clickable="true"
+    android:focusable="true"
+    android:minHeight="@dimen/card_min_height"
+    app:cardBackgroundColor="@color/card_back_color"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="2dp"
+    app:rippleColor="@color/card_ripple_color"
+    app:strokeColor="@color/card_border_color"
+    app:strokeWidth="1dp">
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tv_card"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:padding="2dp"
+        android:text="@string/card_back_text"
+        android:textColor="@color/card_back_text"
+        android:textStyle="bold"
+        app:autoSizeMaxTextSize="26sp"
+        app:autoSizeMinTextSize="10sp"
+        app:autoSizeTextType="uniform" />
+</com.google.android.material.card.MaterialCardView>

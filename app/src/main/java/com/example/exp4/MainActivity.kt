@@ -2,7 +2,10 @@ package com.example.exp4
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -33,6 +36,33 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         displayPlayerInfo()
+    }
+
+    /** 创建选项菜单（“关于”项） */
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    /** 点击菜单后弹出关于对话框 */
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_about -> {
+                showAboutDialog()
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun showAboutDialog() {
+        val message = resources.getStringArray(R.array.about_message_lines).joinToString("\n")
+        AlertDialog.Builder(this)
+            .setTitle(R.string.about_title)
+            .setMessage(message)
+            .setPositiveButton(R.string.btn_ok, null)
+            .show()
     }
 
     /** 从内存仓库读取玩家信息并刷新界面 */
